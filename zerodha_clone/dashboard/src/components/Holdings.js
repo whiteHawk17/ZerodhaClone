@@ -1,22 +1,43 @@
-import React,{useState,useEffect} from "react";
+import React,{useState,useEffect, useContext} from "react";
 
 // import { holdings } from "../data/data";
 
 // import {holdings} from "../data/data";
-import axios from "axios";
+import axios from "../utils/axios";
+import GeneralContext from "./GeneralContext";
+
 
 const Holdings = () => {
-
-
-
   const [allHoldings,setAllHolding] = useState([]);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const {holdingsUpdateTrigger} = useContext(GeneralContext);
 
   useEffect(()=>{
-    axios.get("http://localhost:3002/allHoldings").then((res)=>{
-      console.log(res.data);
-      setAllHolding(res.data);
-    });
-  },[]);
+    const fetchHoldings = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get("/userHoldings");
+        setAllHolding(response.data);
+        setError(null);
+      } catch (error) {
+        console.error("Error fetching holdings:", error);
+        setError("Failed to load holdings. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHoldings();
+  },[holdingsUpdateTrigger]);
+
+  if (loading) {
+    return <div>Loading holdings...</div>;
+  }
+
+  if (error) {
+    return <div className="error-message">{error}</div>;
+  }
 
   return (
     <>
@@ -36,16 +57,15 @@ const Holdings = () => {
             <th>Day chg.</th>
           </tr>
           </thead>
-
+          <tbody>
           {allHoldings.map((stock,index)=>{
             const curValue = stock.price * stock.qty;
-            const isProfit =curValue-stock.avg*stock.qty >=0.0;
-            const profClass=isProfit ? "profit" : "loss";
-            const dayClass=stock.isLoss ? "loss":"profit";
+            const isProfit = curValue-stock.avg*stock.qty >= 0.0;
+            const profClass = isProfit ? "profit" : "loss";
+            const dayClass = stock.isLoss ? "loss" : "profit";
 
             return (
-              <tbody>
-              <tr key={index} >
+              <tr key={index}>
                 <td>{stock.name}</td>
                 <td>{stock.qty}</td>
                 <td>{stock.avg.toFixed(2)}</td>
@@ -54,11 +74,10 @@ const Holdings = () => {
                 <td className={profClass}>{(curValue-stock.avg * stock.qty).toFixed(2)}</td>
                 <td className={profClass}>{stock.net}</td>
                 <td className={dayClass}>{stock.day}</td>
-          </tr>
-          </tbody>
+              </tr>
             )
           })}
-
+          </tbody>
         </table>
       </div>
 
