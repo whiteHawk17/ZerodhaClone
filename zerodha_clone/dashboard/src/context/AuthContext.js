@@ -1,3 +1,4 @@
+// src/context/AuthContext.js
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import axios from '../utils/axios';
 
@@ -9,36 +10,39 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    console.log('AuthContext: Token from localStorage', token);
+    console.log('Dashboard AuthContext: Token from localStorage', token);
 
     if (!token) {
       setLoading(false);
-      console.log('AuthContext: No token found, setting loading to false.');
-      return; // No token, no need to verify
+      console.log('Dashboard AuthContext: No token found, redirecting to login');
+      window.location.replace('http://localhost:3000/login');
+      return;
     }
 
     const checkAuth = async () => {
       try {
-        console.log('AuthContext: Attempting to verify token with backend...');
-        const response = await axios.get('/auth/verify');
-        console.log('AuthContext: Backend verification response', response.data);
+        console.log('Dashboard AuthContext: Verifying token...');
+        const response = await axios.get('/auth/verify', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        console.log('Dashboard AuthContext: Verify response:', response.data);
+
         if (response.data?.user) {
           setUser(response.data.user);
-          console.log('AuthContext: User successfully set.', response.data.user);
+          console.log('Dashboard AuthContext: User authenticated successfully');
         } else {
-          console.log('AuthContext: Backend verification failed (no user data), redirecting.');
-          localStorage.removeItem('token');
-          localStorage.removeItem('userName');
-          window.location.replace('http://localhost:3000/login');
+          throw new Error('No user data received');
         }
       } catch (error) {
-        console.error("AuthContext: Auth check failed:", error);
+        console.error("Dashboard AuthContext: Auth check failed:", error.response?.data || error.message);
         localStorage.removeItem('token');
         localStorage.removeItem('userName');
         window.location.replace('http://localhost:3000/login');
       } finally {
         setLoading(false);
-        console.log('AuthContext: Loading set to false.');
       }
     };
 
@@ -49,7 +53,6 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('token');
     localStorage.removeItem('userName');
     setUser(null);
-    console.log('AuthContext: User logged out, redirecting to frontend login.');
     window.location.replace('http://localhost:3000/login');
   };
 
@@ -62,7 +65,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 };
@@ -75,4 +78,4 @@ export const useAuth = () => {
   return context;
 };
 
-export default AuthContext; 
+export default AuthContext;

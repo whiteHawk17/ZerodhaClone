@@ -1,8 +1,7 @@
-const {model} =require("mongoose");
+import { model } from "mongoose";
+import { OrdersSchema } from '../schemas/OrdersSchema.js';
 
-const {OrdersSchema} =require('../schemas/OrdersSchema');
+const OrdersModel = new model("order", OrdersSchema);
 
-const OrdersModel =new model("order",OrdersSchema);
-
-module.exports={OrdersModel};
+export { OrdersModel };
 

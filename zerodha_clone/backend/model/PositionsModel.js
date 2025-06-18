@@ -1,8 +1,7 @@
-const {model} =require("mongoose");
+import { model } from "mongoose";
+import { PositionsSchema } from '../schemas/PositionsSchema.js';
 
-const {PositionsSchema} =require('../schemas/PositionsSchema');
+const PositionsModel = new model("position", PositionsSchema);
 
-const PositionsModel =new model("position",PositionsSchema);
-
-module.exports={PositionsModel};
+export { PositionsModel };
 

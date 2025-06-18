@@ -1,4 +1,4 @@
-const {Schema} = require("mongoose");
+import { Schema } from "mongoose";
 
 const OrdersSchema = new Schema({
     name: String,
@@ -21,4 +21,4 @@ const OrdersSchema = new Schema({
     }
 });
 
-module.exports = { OrdersSchema };
+export { OrdersSchema };

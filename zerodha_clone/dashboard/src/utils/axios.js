@@ -26,20 +26,10 @@ instance.interceptors.request.use(
 instance.interceptors.response.use(
     response => response,
     error => {
-        if (error.response) {
-            // Only redirect to login if it's a 401 and we're not already on the login page
-            if (error.response.status === 401 && !window.location.pathname.includes('/login')) {
-                // Check if token exists before redirecting
-                const token = localStorage.getItem('token');
-                if (token) {
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('userName');
-                    window.location.replace('http://localhost:3000/login');
-                }
-            }
-        } else if (error.request) {
-            // Network error - don't redirect, just reject
-            console.error('Network error:', error.request);
+        if (error.response?.status === 401) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('userName');
+            window.location.replace('http://localhost:3000/login');
         }
         return Promise.reject(error);
     }
